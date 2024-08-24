@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 
 import "./Navbar.css";
 import { assets } from "../../assets/assets";
 import { Link } from "react-router-dom";
+import { StoreContext, StoreContextType } from "../../context/StoreContext";
 
 interface NavbarProps {
   setShowLogin: React.Dispatch<React.SetStateAction<boolean>>;
@@ -11,6 +12,8 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({setShowLogin}) => {
   const [menu, setMenu] = useState<string>("home");
 
+  const {getTotalCartAmount} = useContext<StoreContextType>(StoreContext);
+
 const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
     const target = e.target as HTMLLIElement;
     setMenu(target.innerText.toLowerCase());
@@ -18,7 +21,9 @@ const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
 
   return (
     <div className="navbar">
-      <img src={assets.logo} alt="" className="logo" />
+      <Link to="/">
+        <img src={assets.logo} alt="" className="logo" />
+      </Link>
       <ul className="navbar-menu">
         <Link
           to="/"
@@ -52,10 +57,12 @@ const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
       <div className="navbar-right">
         <img src={assets.search_icon} alt="" />
         <div className="navbar-search-icon">
-          <img src={assets.basket_icon} alt="" />
-          <div className="dot"></div>
+          <Link to="/cart">
+            <img src={assets.basket_icon} alt="" />
+          </Link>
+          <div className={getTotalCartAmount() === 0 ? "" : "dot"}></div>
         </div>
-        <button onClick={()=>setShowLogin(true)}>Sign In</button>
+        <button onClick={() => setShowLogin(true)}>Sign In</button>
       </div>
     </div>
   );

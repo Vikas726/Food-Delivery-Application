@@ -15,16 +15,20 @@ interface FoodItem {
 export interface StoreContextType {
   food_list: FoodItem[];
   cartItems: { [key: string]: number }; // Object to hold item counts
+  setCartItems: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>; // Function to set the cart items
   addToCart: (itemId: string) => void; // Function to add an item to the cart
   removeFromCart: (itemId: string) => void; // Function to remove an item from the cart
+  getTotalCartAmount: () => number; // Function to get the total amount of the cart
 }
 
 // Default context value to ensure type safety
 const defaultContextValue: StoreContextType = {
   food_list: [],
   cartItems: {},
+  setCartItems: () => {}, // Placeholder function
   addToCart: () => {}, // Placeholder function
   removeFromCart: () => {}, // Placeholder function
+  getTotalCartAmount: () => 0, // Placeholder function
 };
 
 // Create context with default values
@@ -60,16 +64,25 @@ const StoreContextProvider: React.FC<StoreContextProviderProps> = ({
     });
   };
 
-  useEffect(() => {
-    console.log("Cart Items: ", cartItems);
+  const getTotalCartAmount = () => {
+    let totalAmount  = 0;
+    for (const [itemId, quantity] of Object.entries(cartItems)) {
+      const item = food_list.find((foodItem) => foodItem._id === itemId);
+      if (item) {
+        totalAmount += item.price * quantity;
+      }
+    }
+    return totalAmount;
   }
-    , [cartItems]);
+
 
   const contextValue: StoreContextType = {
     food_list,
     cartItems,
+    setCartItems,
     addToCart,
     removeFromCart,
+    getTotalCartAmount
   };
 
   return (
