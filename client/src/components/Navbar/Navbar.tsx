@@ -4,7 +4,11 @@ import "./Navbar.css";
 import { assets } from "../../assets/assets";
 import { Link } from "react-router-dom";
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  setShowLogin: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Navbar: React.FC<NavbarProps> = ({setShowLogin}) => {
   const [menu, setMenu] = useState<string>("home");
 
 const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
@@ -51,7 +55,7 @@ const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
           <img src={assets.basket_icon} alt="" />
           <div className="dot"></div>
         </div>
-        <button>Sign In</button>
+        <button onClick={()=>setShowLogin(true)}>Sign In</button>
       </div>
     </div>
   );
