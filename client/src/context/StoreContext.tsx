@@ -1,6 +1,8 @@
 import React, { createContext, ReactNode, useEffect, useState } from "react";
 import { food_list } from "../assets/assets"; // Assuming this is an array of FoodItem
 
+import axios from "axios";
+
 // Define the type for individual food items
 interface FoodItem {
   _id: string;
@@ -19,6 +21,9 @@ export interface StoreContextType {
   addToCart: (itemId: string) => void; // Function to add an item to the cart
   removeFromCart: (itemId: string) => void; // Function to remove an item from the cart
   getTotalCartAmount: () => number; // Function to get the total amount of the cart
+  url: string;
+  token: string | null;
+  setToken: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 // Default context value to ensure type safety
@@ -29,6 +34,9 @@ const defaultContextValue: StoreContextType = {
   addToCart: () => {}, // Placeholder function
   removeFromCart: () => {}, // Placeholder function
   getTotalCartAmount: () => 0, // Placeholder function
+  url: "",
+  token: "",
+  setToken: () => {}, // Placeholder function
 };
 
 // Create context with default values
@@ -43,7 +51,17 @@ interface StoreContextProviderProps {
 const StoreContextProvider: React.FC<StoreContextProviderProps> = ({
   children,
 }) => {
-  const [cartItems, setCartItems] = useState<{ [key: string]: number }>({});
+  const [cartItems, setCartItems] = useState<{ [key: string]: number }>(
+    localStorage.getItem("cartItems")
+      ? JSON.parse(localStorage.getItem("cartItems") as string)
+      : {}
+  );
+
+  const url = "http://localhost:3000";
+
+  const [token, setToken] = useState<string | null>(null);
+
+  const [food_list,setFoodList] = useState<FoodItem[]>([]);
 
   const addToCart = (itemId: string) => {
     setCartItems((prev) => ({
@@ -65,7 +83,7 @@ const StoreContextProvider: React.FC<StoreContextProviderProps> = ({
   };
 
   const getTotalCartAmount = () => {
-    let totalAmount  = 0;
+    let totalAmount = 0;
     for (const [itemId, quantity] of Object.entries(cartItems)) {
       const item = food_list.find((foodItem) => foodItem._id === itemId);
       if (item) {
@@ -73,8 +91,41 @@ const StoreContextProvider: React.FC<StoreContextProviderProps> = ({
       }
     }
     return totalAmount;
+  };
+
+  const fetchFoodList = async () => {
+    try {
+      const response = await axios.get(`${url}/api/foods`);
+      if(response.data.success){
+        setFoodList(response.data.data)
+      }
+      console.log(response.data);
+    } catch (error) {
+      // Handle errors
+      console.log(error);
+    }
   }
 
+
+  useEffect(() => {
+    fetchFoodList()
+  }
+  ,[])
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setToken(storedToken);
+    }
+    if (!token) {
+      localStorage.removeItem("cartItems");
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    
+  }, [cartItems]);
 
   const contextValue: StoreContextType = {
     food_list,
@@ -82,7 +133,10 @@ const StoreContextProvider: React.FC<StoreContextProviderProps> = ({
     setCartItems,
     addToCart,
     removeFromCart,
-    getTotalCartAmount
+    getTotalCartAmount,
+    url,
+    token,
+    setToken,
   };
 
   return (

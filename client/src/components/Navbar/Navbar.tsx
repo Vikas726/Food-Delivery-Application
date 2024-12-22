@@ -2,22 +2,33 @@ import React, { useContext, useState } from "react";
 
 import "./Navbar.css";
 import { assets } from "../../assets/assets";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { StoreContext, StoreContextType } from "../../context/StoreContext";
 
 interface NavbarProps {
   setShowLogin: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const Navbar: React.FC<NavbarProps> = ({setShowLogin}) => {
+const Navbar: React.FC<NavbarProps> = ({ setShowLogin }) => {
   const [menu, setMenu] = useState<string>("home");
 
-  const {getTotalCartAmount} = useContext<StoreContextType>(StoreContext);
+  const { getTotalCartAmount, token, setToken } =
+    useContext<StoreContextType>(StoreContext);
 
-const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
+    console.log(token)
+
+  const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
     const target = e.target as HTMLLIElement;
     setMenu(target.innerText.toLowerCase());
   };
+
+  const navigate = useNavigate()
+
+  const logout = () =>{
+    setToken(null)
+    localStorage.removeItem('token')
+    navigate('/')
+  }
 
   return (
     <div className="navbar">
@@ -62,7 +73,18 @@ const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
           </Link>
           <div className={getTotalCartAmount() === 0 ? "" : "dot"}></div>
         </div>
-        <button onClick={() => setShowLogin(true)}>Sign In</button>
+        {!token ? (
+          <button onClick={() => setShowLogin(true)}>Sign In</button>
+        ) : (
+          <div className="navbar-profile">
+            <img src={assets.profile_icon} alt="" />
+            <ul className="navbar-profile-dropdown">
+              <li><img src={assets.bag_icon} alt="" /><p>Orders</p></li>
+              <hr />
+              <li onClick={logout}><img src={assets.logout_icon} alt="" /><p>Logout</p></li>
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
